@@ -93,4 +93,7 @@ foreach([
 
 }
 
+Polyfony\Router::get('/badips.txt','Rickroller/Rickroller@Listing');
+
+
 ?>
