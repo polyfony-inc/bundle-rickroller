@@ -5,7 +5,7 @@ class RickrollerController extends Polyfony\Controller {
 	public function RickrollerAction() {
 
 		// log the event normally 
-		Polyfony\Logger::warning('Rick Astley has been trigerred, add thid IP to your blacklist.');
+		Polyfony\Logger::warning('Rick Astley has been trigerred, add this IP to your blacklist.');
 		
 		// log to the bad ips list to provide blacklists for firewalls
 		Models\Offenders::addMe('Rickrolled for trying to access a malicious URL');
