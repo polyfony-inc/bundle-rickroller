@@ -69,7 +69,7 @@ class Offenders extends \Polyfony\Record {
 
 	}
 
-	public static function allAsPlainText() :array {
+	public static function allAsPlainText() :string {
 
 		// declare an array to store bad ips
 		$ips = [];
