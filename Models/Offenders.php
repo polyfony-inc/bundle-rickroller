@@ -1,24 +1,256 @@
 <?php
 
-// CREATE TABLE "Offenders" (
-// "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-// "ip_address" text(16) NOT NULL,
-// "first_seen_date" integer(16) NOT NULL,
-// "last_seen_date" integer(16) NOT NULL,
-// "offenses" integer NOT NULL,
-// "reason" text(256) NOT NULL )
-
 namespace Models;
-use Polyfony\Database as Db;
-use Polyfony\Format as Format;
-use Polyfony\Request as Request;
-use Polyfony\Config as Config;
+use Polyfony\Database 	as Db;
+use Polyfony\Format 	as Format;
+use Polyfony\Request 	as Request;
+use Polyfony\Config 	as Config;
+use Polyfony\Logger 	as Logger;
+use Polyfony\Cache 		as Cache;
+use Polyfony\Exception 	as Exception;
 
 class Offenders extends \Polyfony\Record {
 
+	const redirected_urls 						= [
+		'/FileZilla.xml',
+		'/filezilla.xml',
+		'/sitemanager.xml',
+		'/WS_FTP.INI',
+		'/ws_ftp.ini',
+		'/deployment-config.json',
+		'/config/database.yml',
+		'/config/databases.yml',
+		'/lfm.php',
+		'/sqlite/main.php',
+		'/sqlitemanager/main.php',
+		'/SQLiteManager/main.php',
+		'/SQlite/main.php',
+		'/agSearch/SQlite/main.php',
+		'/password',
+		'/HNAP1/',
+		'/getcfg.php',
+		'/wp-content/',
+		'/jenkins/script',
+		'/mysqldumper/',
+		'/mysql/',
+		'/sql/',
+		'/phpMyAdmin-4.2.1-english/',
+		'/phpMyAdmin-4.2.1-all-languages/',
+		'/hudson/script',
+		'/Joomla/administrator/',
+		'/joomla/administrator/',
+		'/status?full=true',
+		'/admin.php',
+		'/admin/login.php',
+		'/administrator/index.php',
+		'/ajaxproxy/proxy.php',
+		'/magmi/web/magmi.php',
+		'/wp-admin/admin-ajax.php',
+		'/wp-admin/includes/themes.php',
+		'/wp-admin/options-link.php',
+		'/wp-admin/post-new.php',
+		'/wp-login.php',
+		'/blog/xmlrpc.php',
+		'/xmlrpc.php',
+		'/phpinfo.php',
+		'/phpsysinfo/',
+		'/phpmyadmin/',
+		'/login.php',
+		'/config.php',
+		'/config/',
+		'/data/',
+		'/lib/',
+		'/library/',
+		'/cgi/',
+		'/cgi.cgi/',
+		'/bin/',
+		'/phpMyAdmin/',
+		'/admin/cgi',
+		'/piwik/',
+		'/magento/',
+		'/cgi-bin/',
+		'/adm/',
+		'/administrator/',
+		'/3rdparty/phpmyadmin/',
+		'/pma/',
+		'/ownCloud/',
+		'/cms/',
+		'/index.pl',
+		'/index.cgi',
+		'/index.py',
+		'/test/',
+		'/wordpress/',
+		'/cms/',
+		'/index.action',
+		'/login.action',
+		'/manager/',
+		'/mantis/',
+		'/mantisbt/',
+		'/info.php',
+		'/info_php.php',
+		'/test.php',
+		'/admin.cgi',
+		'/login.pl',
+		'/data/owncloud.log',
+		'/data/owncloud.db',
+		'/.htpasswd',
+		'/.passwd',
+		'/private/',
+		'/phpBB/',
+		'/postnuke/',
+		'/admin/login.php',
+		'/~root/',
+		'/~admin/',
+		'/fckeditor/editor/filemanager/connectors/php/upload.php',
+		'/.Trash/',
+		'/.Trashes/',
+		'/.adminer.php.swp',
+		'/.bash_history',
+		'/.cache/',
+		'/app_dev.php',
+		'/index_dev.php',
+		'/.eclipse',
+		'/.ftppass',
+		'/.git/',
+		'/.ssh/id_rsa',
+		'/.ssh/id_rsa.pub',
+		'/.ssh/id_rsa.key',
+		'/007/',
+		'/00.php',
+		'/0manager/',
+		'/0admin/',
+		'/Access/',
+		'/Adm.php',
+		'/Admin-login.php',
+		'/Admin.asp',
+		'/Config.php',
+		'/DB/',
+		'/DefaultWebApp.aspx',
+		'/Drupal.php',
+		'/ESYSManager/',
+		'/Dump.php',
+		'/FCKeditor/',
+		'/FCKeditor.php',
+		'/FCKeditor/editor/filemanager/browser/default/connectors/php/connector.php',
+		'/FTP.php',
+		'/install/',
+		'/install.php',
+		'/Install/',
+		'/Joomla.php',
+		'/Logs/',
+		'/logs/',
+		'/Login.cgi',
+		'/Login.jsp',
+		'/Login.rb',
+		'/Login.pl',
+		'/MyAdmin/',
+		'/PORTAL/',
+		'/Password.dat',
+		'/password.ini',
+		'/passwords.txt',
+		'/Secret/',
+		'/Setup/',
+		'/Setup.php',
+		'/Signin.asp',
+		'/SiteAdmin/login.php',
+		'/SiteServer/Admin.aspx',
+		'SnoopServlet.aspx',
+		'/tmp/',
+		'/tmp.php',
+		'/tamp.php',
+		'/wp/',
+		'/wp.php',
+		'/WordPress/',
+		'/wordpress/',
+		'/_adminer.php',
+		'/__adminer.php',
+		'/__backup/',
+		'/__old/',
+		'/_old/',
+		'/_admin/',
+		'/_admin.php',
+		'/_actions/',
+		'/_actions/_login.php',
+		'/_admin_/',
+		'/_ajax/',
+		'/_cms/',
+		'/access_db/',
+		'/admin.config.php',
+		'/archives.zip',
+		'/backdoorbot/',
+		'/backdoor/',
+		'/bb-admin/'
+	];
+
+	const redirection_url 						= 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; // rick astley's youtube URL
+
+	const offenders_ips_url 					= '/badips.txt'; // the public url listing offenders
+
+	const default_minimum_offenses 				= 2; // default is two
+
+	const default_ignore_offenses_older_than 	= 604800; // default is two weeks
+
+	const cache_for 							= 900; // default is 15 minutes
+
+	const table_creation_query 					= 'CREATE TABLE IF NOT EXISTS "Offenders" ( "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "ip_address" text(16) NOT NULL, "first_seen_date" integer(16) NOT NULL, "last_seen_date" integer(16) NOT NULL, "offenses" integer NOT NULL, "reason" text(256) NOT NULL );';
+
+	const VALIDATORS = [
+		'ip_address'		=>FILTER_VALIDATE_IP
+	];
+
+	private static function createTableIfNeeded() :void {
+
+		// create the offenders table if necessary
+		Db::query()->query(self::table_creation_query)->execute();
+
+	}
+
+	public static function enforce(
+		int $minimum_offenses 				= self::default_minimum_offenses, 
+		int $ignore_offenses_older_than 	= self::default_ignore_offenses_older_than
+	) :void {
+
+		// if offenders are cached
+		if(Cache::has('Offenders')) {
+			// feth it from the cache
+			$offenders = Cache::get('Offenders');
+		}
+		else {
+			// create the table if needed
+			self::createTableIfNeeded();
+			// get a fresh list of offenders
+			$offenders = [];
+			// for each of those
+			foreach(self::_select()->execute() as $offender) {
+				// build an array
+				$offenders[$offender->get('ip_address')] = [
+					'offenses'		=>$offender->get('offenses'),
+					'last_seen_date'=>$offender->get('last_seen_date', true)
+				];
+			}
+			// cache it for some time
+			Cache::put('Offenders', $offenders, true, self::cache_for);
+		}
+		// if the offender exists in our list
+		if(array_key_exists(Request::server('REMOTE_ADDR'), $offenders)) {
+			if(
+				// if is has enough offenses
+				$offenders[Request::server('REMOTE_ADDR')]['offenses'] >= $minimum_offenses && 
+				// and if those are fresh enough
+				$offenders[Request::server('REMOTE_ADDR')]['last_seen_date'] >= time() - $ignore_offenses_older_than
+			) {
+				// log it
+				Logger::warning('A request is being blocked due to previous offenses');
+				// stop it altogether
+				Throw new Exception(
+					'You are banned due to dubious activity', 
+					403
+				);
+			}
+		}
+	}
 
 	public static function addMe(string $reason='None provided') {
-
 
 		// must be in prod to log bad ips
 		if(!Config::isProd()) {
@@ -26,6 +258,8 @@ class Offenders extends \Polyfony\Record {
 			return;
 		}
 
+		// create the table if needed
+		self::createTableIfNeeded();
 		// try seing if an offense was already registered for this IP
 		$offender = self::_select()
 			->where([
@@ -71,6 +305,8 @@ class Offenders extends \Polyfony\Record {
 
 	public static function allAsPlainText() :string {
 
+		// create the table if needed
+		self::createTableIfNeeded();
 		// declare an array to store bad ips
 		$ips = [];
 		// for each currently logged bad ip

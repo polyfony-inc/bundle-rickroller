@@ -11,7 +11,7 @@ class RickrollerController extends Polyfony\Controller {
 		Models\Offenders::addMe('Rickrolled for trying to access a malicious URL');
 		
 		// redirect to Rick Astley
-		Polyfony\Response::setRedirect('https://www.youtube.com/watch?v=dQw4w9WgXcQ',0);
+		Polyfony\Response::setRedirect(Models\Offenders::redirection_url, 0);
 		
 		// render the page
 		Polyfony\Response::render();
