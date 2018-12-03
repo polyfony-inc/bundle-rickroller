@@ -32,9 +32,9 @@ CREATE TABLE "Offenders" (
 
 You are good to go.
 
-### Hard banning in addition to rickrolling
+### Hard banning in addition to rickrolling 
 
-In case you don't use a firewall accepting plaintext IP lists and still wish to prevent further access attemps, you can add the following core in your controllers
+In case you don't use a firewall accepting plaintext IP lists and still wish to prevent further access attemps, you can add the following code in your controllers
 ```php
 Offenders::enforce($minimum_offenses = 2, $ignore_older_than = 604800);
 ``` 
