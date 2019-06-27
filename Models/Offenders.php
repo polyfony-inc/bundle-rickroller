@@ -216,7 +216,7 @@ class Offenders extends \Polyfony\Record {
 
 	const cache_for 							= 900; // default is 15 minutes
 
-	const table_creation_query 					= 'CREATE TABLE IF NOT EXISTS "Offenders" ( "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "ip_address" text(16) NOT NULL, "first_seen_date" integer(16) NOT NULL, "last_seen_date" integer(16) NOT NULL, "offenses" integer NOT NULL, "reason" text(256) NOT NULL );';
+	const table_creation_query 					= 'CREATE TABLE IF NOT EXISTS "Offenders" ( "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "ip_address" text(16) UNIQUE NOT NULL, "first_seen_date" integer(16) NOT NULL, "last_seen_date" integer(16) NOT NULL, "offenses" integer NOT NULL, "reason" text(256) NOT NULL );';
 
 	const VALIDATORS = [
 		'ip_address'		=>FILTER_VALIDATE_IP
