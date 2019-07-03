@@ -203,7 +203,20 @@ class Offenders extends \Polyfony\Record {
 		'/archives.zip',
 		'/backdoorbot/',
 		'/backdoor/',
-		'/bb-admin/'
+		'/bb-admin/',
+		'/crypto/wallet.dat',
+		'/core/wallet.dat',
+		'/coin/wallet.dat',
+		'/btc/wallet.dat',
+		'/bitcoin/wallet/wallet.dat',
+		'/bitcoin/wallet.dat',
+		'/backup/wallet.dat',
+		'/hidden/wallet.dat',
+		'/.bitcoin/wallet.dat',
+		'/.bitcoin/wallet/wallet.dat',
+		'/node/wallet.dat',
+		'/wallet.dat',
+		'/wallet/wallet.dat'
 	];
 
 	const redirection_url 						= 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; // rick astley's youtube URL
