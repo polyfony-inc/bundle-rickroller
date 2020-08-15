@@ -216,7 +216,9 @@ class Offenders extends \Polyfony\Record {
 		'/.bitcoin/wallet/wallet.dat',
 		'/node/wallet.dat',
 		'/wallet.dat',
-		'/wallet/wallet.dat'
+		'/wallet/wallet.dat',
+		'/?XDEBUG_SESSION_START=phpstorm',
+      		'/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php'
 	];
 
 	const redirection_url 						= 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; // rick astley's youtube URL
